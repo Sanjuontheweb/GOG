@@ -1,0 +1,1 @@
+You can play the game with left & right arrow keys
