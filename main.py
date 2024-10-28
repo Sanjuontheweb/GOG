@@ -19,6 +19,7 @@ scroll_speed = 2.5
 bug_frequency = 1000 # millisec
 last_bug = pygame.time.get_ticks() - bug_frequency
 game_over = False
+bugging = False
 
 #load images
 bg = pygame.image.load('imgs/bg.jpg')
@@ -77,7 +78,7 @@ class Bugs(pygame.sprite.Sprite):
 
         # scroll the bugs down
         self.rect.y += scroll_speed
-        if self.rect.top > screen_height - 139:
+        if self.rect.top > screen_height - 135:
             self.kill()
 
         # handle the animation
@@ -98,6 +99,7 @@ bugs_group = pygame.sprite.Group()
 
 movee = Shooter(int(screen_width // 2), 540)
 roket_group.add(movee)
+
 bugee = Bugs(int(screen_width // 2), 50)
 bugs_group.add(bugee)
 
@@ -110,14 +112,7 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
-    # looking for collisions
-    if pygame.sprite.groupcollide(roket_group, bugs_group, False, False):
-        game_over = True
-
-    if game_over == True:
-        run = False
-
-    if game_over == False:
+    if game_over == False and bugging == False:
 
         # make the roket movable
         if event.type == pygame.KEYDOWN:
@@ -134,12 +129,15 @@ while run:
 
         # moving of bugs
         time_now = pygame.time.get_ticks()
-        last_pos_of_bugs_height = 40
         bug_width = 38
         if time_now - last_bug > bug_frequency:
             top_bug = Bugs(random.randint(0, screen_width - bug_width), 0)
             bugs_group.add(top_bug)
             last_bug = time_now
+
+    if game_over:
+        bugging = False
+        run = False
 
     # Clear the screen
     screen.fill((0, 0, 0))
@@ -147,13 +145,20 @@ while run:
     #draw the bg
     screen.blit(bg, (0, 0))
 
+    # updating the bugs
+    bugs_group.update()
+
+    # looking for collisions
+    if pygame.sprite.groupcollide(roket_group, bugs_group, False, False):
+        game_over = True
+
     #drawing the roket
     roket_group.draw(screen)
     roket_group.update()
 
-    # updating the bugs
-    bugs_group.update()
-
     pygame.display.update()
+
+    if event.type == pygame.MOUSEBUTTONDOWN and bugging == False and game_over == False:
+            bugging = True
 
 pygame.quit()
