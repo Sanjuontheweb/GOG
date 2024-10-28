@@ -15,7 +15,10 @@ pygame.display.set_caption('Guardians of the Galaxy')
 
 # game variables
 ground_scroll = 0
-scroll_speed = 4
+scroll_speed = 2.5
+bug_frequency = 1000 # millisec
+last_bug = pygame.time.get_ticks() - bug_frequency
+game_over = False
 
 #load images
 bg = pygame.image.load('imgs/bg.jpg')
@@ -66,17 +69,20 @@ class Bugs(pygame.sprite.Sprite):
     def draw(self):
 
         # draw the enemies
-        screen.blit(self.images[0], (20, 40))
-        screen.blit(self.images[1], (80, 40))
-        screen.blit(self.images[2], (140, 40))
-        screen.blit(self.images[3], (200, 40))
-        screen.blit(self.images[4], (260, 40))
+        randimg = random.randint(0, 4)
+
+        screen.blit(self.images[randimg], self.rect.topleft)
 
     def update(self):
 
+        # scroll the bugs down
+        self.rect.y += scroll_speed
+        if self.rect.top > screen_height - 139:
+            self.kill()
+
         # handle the animation
-        self.counter += 0
-        counter_cooldown = 4
+        self.counter += 1
+        counter_cooldown = 20
 
         if self.counter > counter_cooldown:
             self.counter = 0
@@ -104,18 +110,36 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
-    # make the roket movable
-    if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_LEFT:
-            movee.rect.x -= 4
-        elif event.key == pygame.K_RIGHT:
-            movee.rect.x += 4
+    # looking for collisions
+    if pygame.sprite.groupcollide(roket_group, bugs_group, False, False):
+        game_over = True
 
-    # making the roket move inside the frame
-    if movee.rect.x < 0:  # left boundary
-        movee.rect.x = 0
-    elif movee.rect.x > screen_width - movee.rect.width:  # right boundary
-        movee.rect.x = screen_width - movee.rect.width
+    if game_over == True:
+        run = False
+
+    if game_over == False:
+
+        # make the roket movable
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                movee.rect.x -= 7
+            elif event.key == pygame.K_RIGHT:
+                movee.rect.x += 7
+
+        # making the roket move inside the frame
+        if movee.rect.x < 0:  # left boundary
+            movee.rect.x = 0
+        elif movee.rect.x > screen_width - movee.rect.width:  # right boundary
+            movee.rect.x = screen_width - movee.rect.width
+
+        # moving of bugs
+        time_now = pygame.time.get_ticks()
+        last_pos_of_bugs_height = 40
+        bug_width = 38
+        if time_now - last_bug > bug_frequency:
+            top_bug = Bugs(random.randint(0, screen_width - bug_width), 0)
+            bugs_group.add(top_bug)
+            last_bug = time_now
 
     # Clear the screen
     screen.fill((0, 0, 0))
