@@ -24,7 +24,7 @@ score = 0
 
 #load images
 bg = pygame.image.load('imgs/bg.jpg')
-restart_img = pygame.image.load('imgs/restartt.png')
+restart_img = pygame.image.load('imgs/restartt1.png')
 
 def reset_game():
     bugs_group.empty()
@@ -78,12 +78,11 @@ class Bugs(pygame.sprite.Sprite):
 
         # scroll the bugs down
         self.rect.y += scroll_speed
-        if self.rect.top > screen_height - 133:
-            self.kill()
-
+        if pygame.sprite.spritecollide(movee, bugs_group, False):
             global game_over
             game_over = True
-
+            self.kill()
+            
         # handle the animation
         self.counter += 1
         counter_cooldown = 20
@@ -96,24 +95,40 @@ class Bugs(pygame.sprite.Sprite):
         self.image = self.images[self.index]
 
 class Restart():
-    def __init__(self, x, y, image):
-        self.image = image
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x, y)
+    def __init__(self, x, y):
+            self.images = []  # List to hold images for animation
+            for num in range(1, 3):
+                img = pygame.image.load(f'imgs/restartt{num}.png')
+                self.images.append(img)
+            
+            self.index = 0  # Current image index
+            self.counter = 0  # Counter for animation timing
+            self.cooldown = 45  # Timing for switching images
+            self.image = self.images[self.index]  # Set the initial image
+            self.rect = self.image.get_rect()  # Create the rect for the button
+            self.rect.topleft = (x, y)  # Set the position of the button
 
     def draw(self):
-
         action = False
 
-        # get mouse position
+        # Get mouse position
         pos = pygame.mouse.get_pos()
 
-        # check mouseover button
+        # Check mouseover button
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1:
                 action = True
 
-        # draw button
+        # Update animation
+        self.counter += 1
+        if self.counter > self.cooldown:
+            self.counter = 0
+            self.index += 1
+            if self.index >= len(self.images):
+                self.index = 0
+        self.image = self.images[self.index]  # Update the image based on the index
+
+        # Draw button
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
         return action
@@ -124,7 +139,7 @@ bugs_group = pygame.sprite.Group()
 movee = Shooter(int(screen_width // 2), 540)
 roket_group.add(movee)
 
-restart_btn = Restart(0, 0, restart_img)
+restart_btn = Restart(0, 0)
 
 run = True
 while run:
