@@ -19,11 +19,12 @@ scroll_speed = 2.5
 bug_frequency = 1000 # millisec
 last_bug = pygame.time.get_ticks() - bug_frequency
 game_over = False
-bugging = False
+rocking = False
 score = 0
 
 #load images
 bg = pygame.image.load('imgs/bg.jpg')
+start_img = pygame.image.load('imgs/start.png')
 restart_img = pygame.image.load('imgs/restartt1.png')
 
 def reset_game():
@@ -132,6 +133,17 @@ class Restart():
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
         return action
+    
+class Start():
+    def __init__(self, x, y,image):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+
+    def draw(self):
+
+        # draw button
+        screen.blit(self.image, (self.rect.x, self.rect.y))
 
 roket_group = pygame.sprite.Group()
 bugs_group = pygame.sprite.Group()
@@ -140,6 +152,7 @@ movee = Shooter(int(screen_width // 2), 540)
 roket_group.add(movee)
 
 restart_btn = Restart(0, 0)
+start_btn = Start(0, 0, start_img)
 
 run = True
 while run:
@@ -150,7 +163,7 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
-    if game_over == False:
+    if game_over == False and rocking == True:
 
         # make the roket movable
         keys = pygame.key.get_pressed()
@@ -174,7 +187,7 @@ while run:
             score = reset_game()
             last_bug = pygame.time.get_ticks() - bug_frequency
 
-    if game_over == False:
+    if game_over == False and rocking == True:
         time_now = pygame.time.get_ticks()
         bug_width = 38
         if time_now - last_bug > bug_frequency:
@@ -201,9 +214,12 @@ while run:
     if game_over:
         restart_btn.draw()
 
-    pygame.display.update()
+    # Draw the start button if the game is not started
+    if rocking == False and game_over == False:
+        start_btn.draw()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            rocking = True  # Starting the game when clicked
 
-    if event.type == pygame.MOUSEBUTTONDOWN and bugging == False and game_over == False:
-            bugging = True
+    pygame.display.update()
 
 pygame.quit()
