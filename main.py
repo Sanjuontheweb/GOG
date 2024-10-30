@@ -20,9 +20,18 @@ bug_frequency = 1000 # millisec
 last_bug = pygame.time.get_ticks() - bug_frequency
 game_over = False
 bugging = False
+score = 0
 
 #load images
 bg = pygame.image.load('imgs/bg.jpg')
+restart_img = pygame.image.load('imgs/restartt.png')
+
+def reset_game():
+    bugs_group.empty()
+    movee.rect.x = (screen_width / 2)
+
+    score = 0
+    return score
 
 class Shooter(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -36,8 +45,6 @@ class Shooter(pygame.sprite.Sprite):
         self.image = self.images[self.index]
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
-        self.vel = 0
-        self.clicked = False
 
     def update(self):
 
@@ -67,19 +74,15 @@ class Bugs(pygame.sprite.Sprite):
         self.rect.center = [x, y]
         self.vel = 0
 
-    def draw(self):
-
-        # draw the enemies
-        randimg = random.randint(0, 4)
-
-        screen.blit(self.images[randimg], self.rect.topleft)
-
     def update(self):
 
         # scroll the bugs down
         self.rect.y += scroll_speed
-        if self.rect.top > screen_height - 135:
+        if self.rect.top > screen_height - 133:
             self.kill()
+
+            global game_over
+            game_over = True
 
         # handle the animation
         self.counter += 1
@@ -92,7 +95,28 @@ class Bugs(pygame.sprite.Sprite):
                 self.index = 0
         self.image = self.images[self.index]
 
-        self.draw()
+class Restart():
+    def __init__(self, x, y, image):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+
+    def draw(self):
+
+        action = False
+
+        # get mouse position
+        pos = pygame.mouse.get_pos()
+
+        # check mouseover button
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1:
+                action = True
+
+        # draw button
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
+        return action
 
 roket_group = pygame.sprite.Group()
 bugs_group = pygame.sprite.Group()
@@ -100,8 +124,7 @@ bugs_group = pygame.sprite.Group()
 movee = Shooter(int(screen_width // 2), 540)
 roket_group.add(movee)
 
-bugee = Bugs(int(screen_width // 2), 50)
-bugs_group.add(bugee)
+restart_btn = Restart(0, 0, restart_img)
 
 run = True
 while run:
@@ -112,14 +135,14 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
-    if game_over == False and bugging == False:
+    if game_over == False:
 
         # make the roket movable
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                movee.rect.x -= 7
-            elif event.key == pygame.K_RIGHT:
-                movee.rect.x += 7
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            movee.rect.x -= 7
+        elif keys[pygame.K_RIGHT]:
+            movee.rect.x += 7
 
         # making the roket move inside the frame
         if movee.rect.x < 0:  # left boundary
@@ -127,17 +150,22 @@ while run:
         elif movee.rect.x > screen_width - movee.rect.width:  # right boundary
             movee.rect.x = screen_width - movee.rect.width
 
-        # moving of bugs
+    if pygame.sprite.spritecollide(movee, bugs_group, False):
+        game_over = True
+
+    if game_over:
+        if restart_btn.draw() == True:
+            game_over = False
+            score = reset_game()
+            last_bug = pygame.time.get_ticks() - bug_frequency
+
+    if game_over == False:
         time_now = pygame.time.get_ticks()
         bug_width = 38
         if time_now - last_bug > bug_frequency:
             top_bug = Bugs(random.randint(0, screen_width - bug_width), 0)
             bugs_group.add(top_bug)
             last_bug = time_now
-
-    if game_over:
-        bugging = False
-        run = False
 
     # Clear the screen
     screen.fill((0, 0, 0))
@@ -148,13 +176,15 @@ while run:
     # updating the bugs
     bugs_group.update()
 
-    # looking for collisions
-    if pygame.sprite.groupcollide(roket_group, bugs_group, False, False):
-        game_over = True
+    # drawing the bugs
+    bugs_group.draw(screen)
 
     #drawing the roket
     roket_group.draw(screen)
     roket_group.update()
+
+    if game_over:
+        restart_btn.draw()
 
     pygame.display.update()
 
