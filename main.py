@@ -7,8 +7,8 @@ pygame.init()
 clock = pygame.time.Clock()
 fps = 60
 
-screen_width = 800
-screen_height = 600
+screen_width = 1270
+screen_height = 720
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Guardians of the Galaxy')
@@ -23,7 +23,7 @@ rocking = False
 score = 0
 
 #load images
-bg = pygame.image.load('imgs/bg.jpg')
+bg = pygame.image.load('imgs/bg.jpeg')
 start_img = pygame.image.load('imgs/start.png')
 restart_img = pygame.image.load('imgs/restartt1.png')
 
@@ -104,7 +104,7 @@ class Restart():
             
             self.index = 0  # Current image index
             self.counter = 0  # Counter for animation timing
-            self.cooldown = 45  # Timing for switching images
+            self.cooldown = 36  # Timing for switching images
             self.image = self.images[self.index]  # Set the initial image
             self.rect = self.image.get_rect()  # Create the rect for the button
             self.rect.topleft = (x, y)  # Set the position of the button
@@ -148,7 +148,7 @@ class Start():
 roket_group = pygame.sprite.Group()
 bugs_group = pygame.sprite.Group()
 
-movee = Shooter(int(screen_width // 2), 540)
+movee = Shooter(int(screen_width // 2), 640)
 roket_group.add(movee)
 
 restart_btn = Restart(0, 0)
@@ -168,9 +168,9 @@ while run:
         # make the roket movable
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
-            movee.rect.x -= 7
+            movee.rect.x -= 8.5
         elif keys[pygame.K_RIGHT]:
-            movee.rect.x += 7
+            movee.rect.x += 8.5
 
         # making the roket move inside the frame
         if movee.rect.x < 0:  # left boundary
