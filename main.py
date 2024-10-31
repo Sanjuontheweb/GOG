@@ -217,8 +217,12 @@ while run:
     # Draw the start button if the game is not started
     if rocking == False and game_over == False:
         start_btn.draw()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            rocking = True  # Starting the game when clicked
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                rocking = True  # Starting the game when clicked
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN:
+                    rocking = True
 
     pygame.display.update()
 
