@@ -24,6 +24,11 @@ score = 0
 max_beams = 4
 bug_shot_cooldown = 1500   # bug shot timing var
 last_bug_shot = pygame.time.get_ticks()
+score = 0
+
+font = pygame.font.SysFont('Bauhaus 93', 46)
+
+blue = (0, 150, 255)
 
 #load images
 bg = pygame.image.load('imgs/bg.jpeg')
@@ -34,8 +39,13 @@ def reset_game():
     bugs_group.empty()
     movee.rect.x = (screen_width / 2)
 
+    global score
     score = 0
     return score
+
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x, y))
 
 class Shooter(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -122,6 +132,12 @@ class Beams(pygame.sprite.Sprite):
         self.rect.y -= 5
         if self.rect.bottom < 29:  #makes an animation of removing beams
             self.kill()
+        if pygame.sprite.spritecollide(self, bugs_group, True):
+            # above, the True/False is bcoz the bugs_group needs to be destroyed after the collision or not
+            self.kill()  # the beams gets destroyed after they hit
+            global score
+            score += 1  # increase the score
+
 
 class BugsBullets(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -168,6 +184,9 @@ class Restart():
             if self.index >= len(self.images):
                 self.index = 0
         self.image = self.images[self.index]  # Update the image based on the index
+
+         # draw the score
+        draw_text(str(score), font, blue, int(screen_width / 2) - 13, 37)
 
         # Draw button
         screen.blit(self.image, (self.rect.x, self.rect.y))
@@ -228,7 +247,7 @@ while run:
     # randomize bugs bullets
     time_now = pygame.time.get_ticks()
     
-    if time_now - last_bug_shot > bug_shot_cooldown and len(bugs_bullet_group) < 7 and len(bugs_group) > 0:
+    if time_now - last_bug_shot > bug_shot_cooldown and len(bugs_bullet_group) < 6 and len(bugs_group) > 0:
         attacking_bug = random.choice(bugs_group.sprites())
         # creating the bullets
         bug_bullet = BugsBullets(attacking_bug.rect.centerx, attacking_bug.rect.bottom)
