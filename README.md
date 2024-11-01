@@ -5,4 +5,8 @@ shoot with up key
 no extra lives
 the bugs can shoot too
 
-The score is displayed after you get hit at the restart page
+The score and high score is displayed after you get hit at the restart page
+
+before starting the game, you cannot exit or close the application
+
+To play this game, download the .rar file and extract it
