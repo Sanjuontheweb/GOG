@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from pygame import mixer
 import random
 
 pygame.init()
@@ -35,9 +36,14 @@ bg = pygame.image.load('imgs/bg.jpeg')
 start_img = pygame.image.load('imgs/start.png')
 restart_img = pygame.image.load('imgs/restartt1.png')
 
+# load background music
+mixer.music.load('sounds/RetroSpace.wav')
+mixer.music.play(-1)
+
 def reset_game():
     bugs_group.empty()
     movee.rect.x = (screen_width / 2)
+    mixer.music.unpause()
 
     global score
     score = 0
@@ -81,6 +87,8 @@ class Shooter(pygame.sprite.Sprite):
         # shoot babe
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP] and time_now - self.last_shot > shot_cooldown:
+            beam_sound = mixer.Sound('sounds/beam.wav')
+            beam_sound.play()
             beam = Beams(self.rect.centerx, self.rect.top)
             beam_group.add(beam)
             self.last_shot = time_now
@@ -107,6 +115,7 @@ class Bugs(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(movee, bugs_group, False):
             global game_over
             game_over = True
+
             self.kill()
             
         # handle the animation
@@ -305,6 +314,7 @@ while run:
 
     if game_over:
         restart_btn.draw()
+        mixer.music.pause()
 
     # Draw the start button if the game is not started
     if rocking == False and game_over == False:
