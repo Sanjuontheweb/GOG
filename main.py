@@ -12,7 +12,7 @@ screen_width = 1270
 screen_height = 720
 
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption('Guardians of the Galaxy')
+pygame.display.set_caption('Guardians of the Galazy')
 
 # game variables
 ground_scroll = 0
