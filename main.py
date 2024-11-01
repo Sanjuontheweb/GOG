@@ -21,6 +21,7 @@ last_bug = pygame.time.get_ticks() - bug_frequency
 game_over = False
 rocking = False
 score = 0
+max_beams = 4
 
 #load images
 bg = pygame.image.load('imgs/bg.jpeg')
@@ -46,6 +47,7 @@ class Shooter(pygame.sprite.Sprite):
         self.image = self.images[self.index]
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
+        self.last_shot = pygame.time.get_ticks()
 
     def update(self):
 
@@ -59,6 +61,17 @@ class Shooter(pygame.sprite.Sprite):
             if self.index >= len(self.images):
                 self.index = 0
         self.image = self.images[self.index]
+
+        # record current time
+        time_now = pygame.time.get_ticks()
+        shot_cooldown = 700  # millisecond
+
+        # shoot babe
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP] and time_now - self.last_shot > shot_cooldown:
+            beam = Beams(self.rect.centerx, self.rect.top)
+            beam_group.add(beam)
+            self.last_shot = time_now
 
 class Bugs(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -94,6 +107,31 @@ class Bugs(pygame.sprite.Sprite):
             if self.index >= len(self.images):
                 self.index = 0
         self.image = self.images[self.index]
+
+# Bullet classes
+class Beams(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('imgs/beam.png')
+        self.rect = self.image.get_rect()
+        self.rect.center = [x, y]
+    
+    def update(self):
+        self.rect.y -= 5
+        if self.rect.bottom < 29:  #makes an animation of removing beams
+            self.kill()
+
+class BugsBullets(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('imgs/beam.png')
+        self.rect = self.image.get_rect()
+        self.rect.center = [x, y]
+    
+    def update(self):
+        self.rect.y += 3
+        if self.rect.top > screen_height:  # removing bullets
+            self.kill()
 
 class Restart():
     def __init__(self, x, y):
@@ -147,7 +185,10 @@ class Start():
 
 roket_group = pygame.sprite.Group()
 bugs_group = pygame.sprite.Group()
+beam_group = pygame.sprite.Group()
+bugs_bullet_group = pygame.sprite.Group()
 
+# create the roket
 movee = Shooter(int(screen_width // 2), 640)
 roket_group.add(movee)
 
@@ -163,10 +204,11 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
+    keys = pygame.key.get_pressed()
+
     if game_over == False and rocking == True:
 
         # make the roket movable
-        keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             movee.rect.x -= 8.5
         elif keys[pygame.K_RIGHT]:
@@ -181,13 +223,16 @@ while run:
     if pygame.sprite.spritecollide(movee, bugs_group, False):
         game_over = True
 
+    # randomize bugs bullets
+
     if game_over:
-        if restart_btn.draw() == True:
+        if restart_btn.draw():
             game_over = False
             score = reset_game()
             last_bug = pygame.time.get_ticks() - bug_frequency
 
     if game_over == False and rocking == True:
+        # spawns bugs
         time_now = pygame.time.get_ticks()
         bug_width = 38
         if time_now - last_bug > bug_frequency:
@@ -210,6 +255,14 @@ while run:
     #drawing the roket
     roket_group.draw(screen)
     roket_group.update()
+
+    # drawing the bullets
+    bugs_bullet_group.update()
+    bugs_bullet_group.draw(screen)
+
+    # drawing the beams
+    beam_group.update()
+    beam_group.draw(screen)
 
     if game_over:
         restart_btn.draw()
