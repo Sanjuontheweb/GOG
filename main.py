@@ -24,10 +24,10 @@ score = 0
 max_beams = 4
 bug_shot_cooldown = 1500   # bug shot timing var
 last_bug_shot = pygame.time.get_ticks()
+
+# score properties
 score = 0
-
 font = pygame.font.SysFont('Bauhaus 93', 46)
-
 blue = (0, 150, 255)
 
 #load images
@@ -150,6 +150,11 @@ class BugsBullets(pygame.sprite.Sprite):
         self.rect.y += 7
         if self.rect.top > screen_height:  # removing bullets
             self.kill()
+        if pygame.sprite.spritecollide(self, roket_group, False):
+            global game_over
+            game_over = True
+
+            self.kill()  # the beams gets destroyed after they hit
 
 class Restart():
     def __init__(self, x, y):
@@ -171,8 +176,13 @@ class Restart():
         # Get mouse position
         pos = pygame.mouse.get_pos()
 
-        # Check mouseover button
-        if self.rect.collidepoint(pos):
+        # Check for button clicks
+        key = pygame.key.get_pressed()
+
+        if key[pygame.K_RETURN] or key[pygame.K_SPACE]:
+            action = True
+
+        elif self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1:
                 action = True
 
