@@ -28,8 +28,12 @@ last_bug_shot = pygame.time.get_ticks()
 
 # score properties
 score = 0
-font = pygame.font.SysFont('Bauhaus 93', 46)
+fonts = pygame.font.SysFont('Bauhaus 93', 25)
 blue = (0, 150, 255)
+
+# high score properties
+fontb = pygame.font.SysFont('Bauhaus 93', 46)
+red = (240, 0, 0)
 
 #load images
 bg = pygame.image.load('imgs/bg.jpeg')
@@ -52,6 +56,10 @@ def reset_game():
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
+
+def highest_score():
+    with open('highest_score.txt',"r") as f:
+        return f.read()
 
 class Shooter(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -205,7 +213,10 @@ class Restart():
         self.image = self.images[self.index]  # Update the image based on the index
 
          # draw the score
-        draw_text(str(score), font, blue, int(screen_width / 2) - 13, 37)
+        draw_text(str(score), fontb, blue, int(screen_width / 2) - 13, 37)
+
+        # draw high score
+        draw_text('HIGH SCORE: ' + str(high_score), fonts, red, int(screen_width / 2) - 70, 90)
 
         # Draw button
         screen.blit(self.image, (self.rect.x, self.rect.y))
@@ -234,6 +245,12 @@ roket_group.add(movee)
 
 restart_btn = Restart(0, 0)
 start_btn = Start(0, 0, start_img)
+
+# high score set
+try:
+    high_score = int(highest_score())
+except:
+    high_score = 0
 
 run = True
 while run:
@@ -311,6 +328,12 @@ while run:
     # drawing the beams
     beam_group.update()
     beam_group.draw(screen)
+
+    # high score check
+    if high_score < score:
+        high_score = score
+    with open('highest score.txt', "w") as f:
+        f.write(str(high_score))
 
     if game_over:
         restart_btn.draw()
