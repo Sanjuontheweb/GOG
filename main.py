@@ -22,6 +22,8 @@ game_over = False
 rocking = False
 score = 0
 max_beams = 4
+bug_shot_cooldown = 1500   # bug shot timing var
+last_bug_shot = pygame.time.get_ticks()
 
 #load images
 bg = pygame.image.load('imgs/bg.jpeg')
@@ -124,12 +126,12 @@ class Beams(pygame.sprite.Sprite):
 class BugsBullets(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('imgs/beam.png')
+        self.image = pygame.image.load('imgs/bug_bullet.png')
         self.rect = self.image.get_rect()
         self.rect.center = [x, y]
     
     def update(self):
-        self.rect.y += 3
+        self.rect.y += 7
         if self.rect.top > screen_height:  # removing bullets
             self.kill()
 
@@ -224,6 +226,14 @@ while run:
         game_over = True
 
     # randomize bugs bullets
+    time_now = pygame.time.get_ticks()
+    
+    if time_now - last_bug_shot > bug_shot_cooldown and len(bugs_bullet_group) < 7 and len(bugs_group) > 0:
+        attacking_bug = random.choice(bugs_group.sprites())
+        # creating the bullets
+        bug_bullet = BugsBullets(attacking_bug.rect.centerx, attacking_bug.rect.bottom)
+        bugs_bullet_group.add(bug_bullet)
+        last_bug_shot = time_now
 
     if game_over:
         if restart_btn.draw():
